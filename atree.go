@@ -56,7 +56,7 @@ type node struct {
 	low, high, max, min Value    // max value held by children
 	children            [2]*node // array to hold left/right
 	red                 bool     // indicates if this node is red
-	id                  uint64   // we store the id locally to reduce the number of calls to the method on the interface
+	data                Data     // we store the id locally to reduce the number of calls to the method on the interface
 }
 
 func (n *node) query(low, high Value, interval Interval, maxDimension uint64, fn func(node *node)) {
@@ -101,9 +101,10 @@ func newNode(interval Interval, min, max Value, dimension uint64) *node {
 		max:      max,
 		red:      true,
 		children: [2]*node{},
+		data:     &dataPtr{},
 	}
 	if interval != nil {
-		itn.id = interval.ID()
+		itn.data.SetID(interval.Data().ID())
 		itn.low = interval.LowAtDimension(dimension)
 		itn.high = interval.HighAtDimension(dimension)
 	}
@@ -142,15 +143,15 @@ func (tree *tree) add(iv Interval) {
 
 	tree.resetDummy()
 	var (
-		dummy = tree.dummy
+		dummy               = tree.dummy
 		parent, grandParent *node
-		node = tree.root
-		dir, last int
-		otherLast = 1
-		id = iv.ID()
-		max = iv.HighAtDimension(1)
-		ivLow = iv.LowAtDimension(1)
-		helper = &dummy
+		node                = tree.root
+		dir, last           int
+		otherLast           = 1
+		id                  = iv.Data().ID()
+		max                 = iv.HighAtDimension(1)
+		ivLow               = iv.LowAtDimension(1)
+		helper              = &dummy
 	)
 
 	// set this AFTER clearing dummy
@@ -169,7 +170,7 @@ func (tree *tree) add(iv Interval) {
 			node.max = max
 		}
 
-		if ivLow.Lesser(node.min)  {
+		if ivLow.Lesser(node.min) {
 			node.min = ivLow
 		}
 
@@ -183,13 +184,13 @@ func (tree *tree) add(iv Interval) {
 			}
 		}
 
-		if node.id == id {
+		if node.data.ID() == id {
 			break
 		}
 
 		last = dir
 		otherLast = takeOpposite(last)
-		dir = compare(node.low, ivLow, node.id, id)
+		dir = compare(node.low, ivLow, node.data.ID(), id)
 
 		if grandParent != nil {
 			helper = grandParent
@@ -216,13 +217,13 @@ func (tree *tree) delete(iv Interval) {
 
 	tree.resetDummy()
 	var (
-		dummy = tree.dummy
+		dummy                      = tree.dummy
 		found, parent, grandParent *node
-		last, otherDir, otherLast int // keeping track of last direction
-		id = iv.ID()
-		dir = 1
-		node = &dummy
-		ivLow = iv.LowAtDimension(1)
+		last, otherDir, otherLast  int // keeping track of last direction
+		id                         = iv.Data().ID()
+		dir                        = 1
+		node                       = &dummy
+		ivLow                      = iv.LowAtDimension(1)
 	)
 
 	node.children[1] = tree.root
@@ -232,10 +233,10 @@ func (tree *tree) delete(iv Interval) {
 
 		grandParent, parent, node = parent, node, node.children[dir]
 
-		dir = compare(node.low, ivLow, node.id, id)
+		dir = compare(node.low, ivLow, node.data.ID(), id)
 		otherDir = takeOpposite(dir)
 
-		if node.id == id {
+		if node.data.ID() == id {
 			found = node
 		}
 
@@ -276,7 +277,8 @@ func (tree *tree) delete(iv Interval) {
 
 	if found != nil {
 		tree.number--
-		found.interval, found.max, found.min, found.low, found.high, found.id = node.interval, node.max, node.min, node.low, node.high, node.id
+		found.interval, found.max, found.min, found.low, found.high = node.interval, node.max, node.min, node.low, node.high
+		found.data.SetID(node.data.ID())
 		parentDir := intFromBool(parent.children[1] == node)
 		childDir := intFromBool(node.children[0] == nil)
 
@@ -303,7 +305,7 @@ func insertInterval(dimension uint64, interval Interval, index Value, count int6
 		return 1
 	}
 
-	if index.LesserOrEq(low) && count * -1 >= high.Substract(low) {
+	if index.LesserOrEq(low) && count*-1 >= high.Substract(low) {
 		return -1
 	}
 
@@ -319,7 +321,7 @@ func insertInterval(dimension uint64, interval Interval, index Value, count int6
 // does not alter the ranges on the intervals themselves, the consumer
 // is expected to do that.
 func (tree *tree) Insert(dimension uint64,
-index Value, count int64) (Intervals, Intervals) {
+	index Value, count int64) (Intervals, Intervals) {
 
 	if tree.root == nil {
 		// nothing to do
@@ -358,7 +360,7 @@ index Value, count int64) (Intervals, Intervals) {
 			}
 			mod = true
 		}
-		if n.low.Greater(index){
+		if n.low.Greater(index) {
 			n.low.Add(count)
 			if n.low.Lesser(index) {
 				n.low = index
@@ -398,8 +400,8 @@ func (tree *tree) Query(interval Interval) Intervals {
 
 	var (
 		Intervals = intervalsPool.Get().(Intervals)
-		ivLow = interval.LowAtDimension(1)
-		ivHigh = interval.HighAtDimension(1)
+		ivLow     = interval.LowAtDimension(1)
+		ivHigh    = interval.HighAtDimension(1)
 	)
 
 	tree.root.query(ivLow, ivHigh, interval, tree.maxDimension, func(node *node) {

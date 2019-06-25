@@ -17,8 +17,8 @@ limitations under the License.
 package goaugmented
 
 import (
-	"sync"
 	"fmt"
+	"sync"
 )
 
 var intervalsPool = sync.Pool{
@@ -47,7 +47,7 @@ type dimension struct {
 
 type interval struct {
 	dimensions []*dimension
-	id         uint64
+	data       Data
 }
 
 func (mi *interval) checkDimension(dimension uint64) {
@@ -69,18 +69,18 @@ func (mi *interval) OverlapsAtDimension(iv Interval, dimension uint64) bool {
 		mi.LowAtDimension(dimension).Lesser(iv.HighAtDimension(dimension))
 }
 
-func (mi interval) ID() uint64 {
-	return mi.id
+func (mi interval) Data() Data {
+	return mi.data
 }
 
-func SingleDimensionInterval(low, high Value, id uint64) *interval {
-	return &interval{[]*dimension{&dimension{low: low, high: high}}, id}
+func SingleDimensionInterval(low, high Value, id uint64, data interface{}) *interval {
+	return &interval{[]*dimension{&dimension{low: low, high: high}}, &dataPtr{id, data}}
 }
 
-func MultiDimensionInterval(id uint64, dimensions ...*dimension) *interval {
-	return &interval{dimensions: dimensions, id: id}
+func MultiDimensionInterval(id uint64, data interface{}, dimensions ...*dimension) *interval {
+	return &interval{dimensions: dimensions, data: &dataPtr{id, data}}
 }
 
 func ValueInterval(val Value) *interval {
-	return SingleDimensionInterval(val, val, 0)
+	return SingleDimensionInterval(val, val, 0, nil)
 }
