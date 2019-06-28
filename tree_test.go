@@ -65,7 +65,7 @@ func TestTree(t *testing.T) {
 		t.Fatalf(`Error compare size query intervals`)
 	}
 
-	d, ok := intervals[0].Data().Data().(*testPointer)
+	d, ok := intervals[0].Data().(*testPointer)
 	if !ok {
 		t.Fatalf(`Error cast data to pointer`)
 	}

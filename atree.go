@@ -56,7 +56,7 @@ type node struct {
 	low, high, max, min Value    // max value held by children
 	children            [2]*node // array to hold left/right
 	red                 bool     // indicates if this node is red
-	data                Data     // we store the id locally to reduce the number of calls to the method on the interface
+	id                  uint64     // we store the id locally to reduce the number of calls to the method on the interface
 }
 
 func (n *node) query(low, high Value, interval Interval, maxDimension uint64, fn func(node *node)) {
@@ -101,10 +101,9 @@ func newNode(interval Interval, min, max Value, dimension uint64) *node {
 		max:      max,
 		red:      true,
 		children: [2]*node{},
-		data:     &dataPtr{},
 	}
 	if interval != nil {
-		itn.data.SetID(interval.Data().ID())
+		itn.id = interval.ID()
 		itn.low = interval.LowAtDimension(dimension)
 		itn.high = interval.HighAtDimension(dimension)
 	}
@@ -148,7 +147,7 @@ func (tree *tree) add(iv Interval) {
 		node                = tree.root
 		dir, last           int
 		otherLast           = 1
-		id                  = iv.Data().ID()
+		id                  = iv.ID()
 		max                 = iv.HighAtDimension(1)
 		ivLow               = iv.LowAtDimension(1)
 		helper              = &dummy
@@ -184,13 +183,13 @@ func (tree *tree) add(iv Interval) {
 			}
 		}
 
-		if node.data.ID() == id {
+		if node.id == id {
 			break
 		}
 
 		last = dir
 		otherLast = takeOpposite(last)
-		dir = compare(node.low, ivLow, node.data.ID(), id)
+		dir = compare(node.low, ivLow, node.id, id)
 
 		if grandParent != nil {
 			helper = grandParent
@@ -220,7 +219,7 @@ func (tree *tree) delete(iv Interval) {
 		dummy                      = tree.dummy
 		found, parent, grandParent *node
 		last, otherDir, otherLast  int // keeping track of last direction
-		id                         = iv.Data().ID()
+		id                         = iv.ID()
 		dir                        = 1
 		node                       = &dummy
 		ivLow                      = iv.LowAtDimension(1)
@@ -233,10 +232,10 @@ func (tree *tree) delete(iv Interval) {
 
 		grandParent, parent, node = parent, node, node.children[dir]
 
-		dir = compare(node.low, ivLow, node.data.ID(), id)
+		dir = compare(node.low, ivLow, node.id, id)
 		otherDir = takeOpposite(dir)
 
-		if node.data.ID() == id {
+		if node.id == id {
 			found = node
 		}
 
@@ -278,7 +277,7 @@ func (tree *tree) delete(iv Interval) {
 	if found != nil {
 		tree.number--
 		found.interval, found.max, found.min, found.low, found.high = node.interval, node.max, node.min, node.low, node.high
-		found.data.SetID(node.data.ID())
+		found.id = node.id
 		parentDir := intFromBool(parent.children[1] == node)
 		childDir := intFromBool(node.children[0] == nil)
 

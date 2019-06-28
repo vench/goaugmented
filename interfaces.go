@@ -45,11 +45,6 @@ type Value interface {
 	MaximalValue() Value
 }
 
-type Data interface {
-	ID() uint64
-	Data() interface{}
-	SetID(uint64)
-}
 
 // Interval is the interface that must be implemented by any
 // item added to the interval tree.
@@ -66,7 +61,10 @@ type Interval interface {
 	// ID should be a unique ID representing this interval.  This
 	// is used to identify which interval to delete from the tree if
 	// there are duplicates.
-	Data() Data
+	ID() uint64
+
+	//
+	Data() interface{}
 }
 
 // Tree defines the object that is returned from the

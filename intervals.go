@@ -47,7 +47,8 @@ type dimension struct {
 
 type interval struct {
 	dimensions []*dimension
-	data       Data
+	id       uint64
+	data  interface{}
 }
 
 func (mi *interval) checkDimension(dimension uint64) {
@@ -69,16 +70,20 @@ func (mi *interval) OverlapsAtDimension(iv Interval, dimension uint64) bool {
 		mi.LowAtDimension(dimension).Lesser(iv.HighAtDimension(dimension))
 }
 
-func (mi interval) Data() Data {
+func (mi interval) Data() interface{} {
 	return mi.data
 }
 
+func (mi interval) ID() uint64 {
+	return mi.id
+}
+
 func SingleDimensionInterval(low, high Value, id uint64, data interface{}) *interval {
-	return &interval{[]*dimension{&dimension{low: low, high: high}}, &dataPtr{id, data}}
+	return &interval{[]*dimension{&dimension{low: low, high: high}}, id, data}
 }
 
 func MultiDimensionInterval(id uint64, data interface{}, dimensions ...*dimension) *interval {
-	return &interval{dimensions: dimensions, data: &dataPtr{id, data}}
+	return &interval{dimensions: dimensions, id:id, data:  data}
 }
 
 func ValueInterval(val Value) *interval {
