@@ -40,27 +40,23 @@ func (ivs *Intervals) Dispose() {
 	intervalsPool.Put(*ivs)
 }
 
-type dimension struct {
-	low, high int64
-}
-
 type interval struct {
-	dimension *dimension
-	id       uint64
-	data  interface{}
+	low, high int64
+	id        uint64
+	data      interface{}
 }
 
-func (mi *interval) LowAtDimension() int64 {
-	return mi.dimension.low
+func (mi *interval) Low() int64 {
+	return mi.low
 }
 
-func (mi *interval) HighAtDimension() int64 {
-	return mi.dimension.high
+func (mi *interval) High() int64 {
+	return mi.high
 }
 
-func (mi *interval) OverlapsAtDimension(iv Interval) bool {
-	return mi.HighAtDimension() > iv.LowAtDimension() &&
-		mi.LowAtDimension() < iv.HighAtDimension()
+func (mi *interval) Overlaps(iv Interval) bool {
+	return mi.High() > iv.Low() &&
+		mi.Low() < iv.High()
 }
 
 func (mi interval) Data() interface{} {
@@ -72,9 +68,8 @@ func (mi interval) ID() uint64 {
 }
 
 func SingleDimensionInterval(low, high int64, id uint64, data interface{}) *interval {
-	return &interval{&dimension{low: low, high: high}, id, data}
+	return &interval{low, high, id, data}
 }
-
 
 func ValueInterval(val int64) *interval {
 	return SingleDimensionInterval(val, val, 0, nil)

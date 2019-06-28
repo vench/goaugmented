@@ -1,27 +1,25 @@
 package goaugmented
 
 import (
-	"testing"
 	"math/rand"
+	"testing"
 
 	gt "github.com/Kerah/goaugmented"
 	gta "github.com/Kerah/goaugmented/augmented"
 )
 
 type record struct {
-	A,B int
+	A, B int
 }
 
-
-func (*record) Foo(){}
+func (*record) Foo() {}
 
 var countData = 1000000
-
 
 func BenchmarkTree(b *testing.B) {
 	base := 100
 	tree := New()
-	for i := 0; i < countData; i ++ {
+	for i := 0; i < countData; i++ {
 		from := base + rand.Intn(base)
 		to := base + rand.Intn(base)
 		record := &record{from, to}
@@ -29,12 +27,11 @@ func BenchmarkTree(b *testing.B) {
 		interval := SingleDimensionInterval(
 			int64(from),
 			int64(from),
-			uint64(i + 1),
+			uint64(i+1),
 			record,
 		)
 		tree.Add(interval)
 	}
-
 
 	b.ResetTimer()
 
@@ -58,7 +55,7 @@ func BenchmarkTreeOrigin(b *testing.B) {
 	base := 100
 	m := map[uint64]*record{}
 	tree := gt.New(1)
-	for i := 0; i < countData; i ++ {
+	for i := 0; i < countData; i++ {
 		from := base + rand.Intn(base)
 		to := base + rand.Intn(base)
 		id := uint64(i + 1)
@@ -73,7 +70,6 @@ func BenchmarkTreeOrigin(b *testing.B) {
 		tree.Add(interval)
 	}
 
-
 	b.ResetTimer()
 
 	b.RunParallel(func(pb *testing.PB) {
@@ -84,7 +80,7 @@ func BenchmarkTreeOrigin(b *testing.B) {
 			)
 			list := tree.Query(query)
 
-			for _,item := range list {
+			for _, item := range list {
 				if r, ok := m[item.ID()]; ok {
 					r.Foo()
 				}

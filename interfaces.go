@@ -32,20 +32,18 @@ range handling.
 
 package goaugmented
 
-
-
 // Interval is the interface that must be implemented by any
 // item added to the interval tree.
 type Interval interface {
 	// LowAtDimension returns an integer representing the lower bound
 	// at the requested dimension.
-	LowAtDimension() int64
+	Low() int64
 	// HighAtDimension returns an integer representing the higher bound
 	// at the requested dimension.
-	HighAtDimension() int64
+	High() int64
 	// OverlapsAtDimension should return a bool indicating if the provided
 	// interval overlaps this interval at the dimension requested.
-	OverlapsAtDimension(Interval) bool
+	Overlaps(Interval) bool
 	// ID should be a unique ID representing this interval.  This
 	// is used to identify which interval to delete from the tree if
 	// there are duplicates.

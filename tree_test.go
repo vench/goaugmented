@@ -56,7 +56,7 @@ func TestTree(t *testing.T) {
 		t.Fatalf(`Error compare size tree`)
 	}
 
-	query := ValueInterval(301	)
+	query := ValueInterval(301)
 
 	intervals := tree.Query(query)
 	if len(intervals) != 1 {
@@ -87,7 +87,7 @@ func TestTree(t *testing.T) {
 		t.Fatalf(`Error compare size query intervals`)
 	}
 
-	intervals = tree.Query(ValueInterval(69	))
+	intervals = tree.Query(ValueInterval(69))
 	if len(intervals) != 2 {
 		t.Fatalf(`Error compare size query intervals`)
 	}
@@ -106,11 +106,12 @@ func TestTree(t *testing.T) {
 
 	tree.Delete(iv2)
 
-	intervals = tree.Query(ValueInterval(76	))
+	intervals = tree.Query(ValueInterval(76))
 	if len(intervals) != 1 {
 		t.Fatalf(`Error compare size query intervals`)
 	}
 	if intervals[0].ID() != iv1.ID() {
 		t.Fatalf(`Error compare ids`)
 	}
+
 }
