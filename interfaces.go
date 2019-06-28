@@ -32,18 +32,6 @@ range handling.
 
 package goaugmented
 
-type Value interface {
-	Greater(Value) bool
-	GreaterOrEq(Value) bool
-	Lesser(Value) bool
-	LesserOrEq(Value) bool
-	Substract(Value) int64
-
-	Add(int64) Value
-
-	MinimalValue() Value
-	MaximalValue() Value
-}
 
 
 // Interval is the interface that must be implemented by any
@@ -51,13 +39,13 @@ type Value interface {
 type Interval interface {
 	// LowAtDimension returns an integer representing the lower bound
 	// at the requested dimension.
-	LowAtDimension(uint64) Value
+	LowAtDimension() int64
 	// HighAtDimension returns an integer representing the higher bound
 	// at the requested dimension.
-	HighAtDimension(uint64) Value
+	HighAtDimension() int64
 	// OverlapsAtDimension should return a bool indicating if the provided
 	// interval overlaps this interval at the dimension requested.
-	OverlapsAtDimension(Interval, uint64) bool
+	OverlapsAtDimension(Interval) bool
 	// ID should be a unique ID representing this interval.  This
 	// is used to identify which interval to delete from the tree if
 	// there are duplicates.
@@ -90,5 +78,5 @@ type Tree interface {
 	// intervals are automatically removed from the tree.  The tree
 	// does not alter the ranges on the intervals themselves, the consumer
 	// is expected to do that.
-	Insert(dimension uint64, index Value, count int64) (Intervals, Intervals)
+	Insert(index int64, count int64) (Intervals, Intervals)
 }

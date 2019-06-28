@@ -15,18 +15,20 @@ type record struct {
 
 func (*record) Foo(){}
 
+var countData = 1000000
+
 
 func BenchmarkTree(b *testing.B) {
 	base := 100
-	tree := New(1)
-	for i := 0; i < 500000; i ++ {
+	tree := New()
+	for i := 0; i < countData; i ++ {
 		from := base + rand.Intn(base)
 		to := base + rand.Intn(base)
 		record := &record{from, to}
 
 		interval := SingleDimensionInterval(
-			NewInt64(int64(from)),
-			NewInt64(int64(to)),
+			int64(from),
+			int64(from),
 			uint64(i + 1),
 			record,
 		)
@@ -40,7 +42,7 @@ func BenchmarkTree(b *testing.B) {
 
 		for pb.Next() {
 			query := ValueInterval(
-				NewInt64(int64(base + rand.Intn(base))),
+				int64(base + rand.Intn(base)),
 			)
 			list := tree.Query(query)
 			for _, item := range list {
@@ -56,7 +58,7 @@ func BenchmarkTreeOrigin(b *testing.B) {
 	base := 100
 	m := map[uint64]*record{}
 	tree := gt.New(1)
-	for i := 0; i < 500000; i ++ {
+	for i := 0; i < countData; i ++ {
 		from := base + rand.Intn(base)
 		to := base + rand.Intn(base)
 		id := uint64(i + 1)

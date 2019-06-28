@@ -10,44 +10,44 @@ type testPointer struct {
 
 //
 func TestTree(t *testing.T) {
-	tree := New(1)
+	tree := New()
 	if tree.Len() != 0 {
 		t.Fatalf(`Error compare size tree`)
 	}
 
 	iv1 := SingleDimensionInterval(
-		NewInt64(50),
-		NewInt64(100),
+		50,
+		100,
 		10,
 		&testPointer{"Some text"},
 	)
 	tree.Add(iv1)
 
 	iv2 := SingleDimensionInterval(
-		NewInt64(50),
-		NewInt64(100),
+		50,
+		100,
 		12,
 		&testPointer{"Some text 2"},
 	)
 	tree.Add(iv2)
 
 	iv3 := SingleDimensionInterval(
-		NewInt64(100),
-		NewInt64(200),
+		100,
+		200,
 		15, &testPointer{"Some text 3"},
 	)
 	tree.Add(iv3)
 
 	iv4 := SingleDimensionInterval(
-		NewInt64(300),
-		NewInt64(400),
+		300,
+		400,
 		99, &testPointer{"Some text 4"},
 	)
 	tree.Add(iv4)
 
 	iv5 := SingleDimensionInterval(
-		NewInt64(300),
-		NewInt64(400),
+		300,
+		400,
 		99, &testPointer{"Some text 5"},
 	)
 	tree.Add(iv5) // not unique
@@ -56,9 +56,7 @@ func TestTree(t *testing.T) {
 		t.Fatalf(`Error compare size tree`)
 	}
 
-	query := ValueInterval(
-		NewInt64(301),
-	)
+	query := ValueInterval(301	)
 
 	intervals := tree.Query(query)
 	if len(intervals) != 1 {
@@ -87,5 +85,32 @@ func TestTree(t *testing.T) {
 	intervals = tree.Query(query)
 	if len(intervals) != 0 {
 		t.Fatalf(`Error compare size query intervals`)
+	}
+
+	intervals = tree.Query(ValueInterval(69	))
+	if len(intervals) != 2 {
+		t.Fatalf(`Error compare size query intervals`)
+	}
+
+	if intervals[0].ID() != iv1.ID() {
+		t.Fatalf(`Error compare ids`)
+	}
+
+	if intervals[1].ID() != iv2.ID() {
+		t.Fatalf(`Error compare ids`)
+	}
+
+	if intervals[1].ID() == intervals[0].ID() {
+		t.Fatalf(`Error not compare ids`)
+	}
+
+	tree.Delete(iv2)
+
+	intervals = tree.Query(ValueInterval(76	))
+	if len(intervals) != 1 {
+		t.Fatalf(`Error compare size query intervals`)
+	}
+	if intervals[0].ID() != iv1.ID() {
+		t.Fatalf(`Error compare ids`)
 	}
 }

@@ -17,7 +17,6 @@ limitations under the License.
 package goaugmented
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -42,32 +41,26 @@ func (ivs *Intervals) Dispose() {
 }
 
 type dimension struct {
-	low, high Value
+	low, high int64
 }
 
 type interval struct {
-	dimensions []*dimension
+	dimension *dimension
 	id       uint64
 	data  interface{}
 }
 
-func (mi *interval) checkDimension(dimension uint64) {
-	if dimension > uint64(len(mi.dimensions)) {
-		panic(fmt.Sprintf(`Dimension: %d out of range.`, dimension))
-	}
+func (mi *interval) LowAtDimension() int64 {
+	return mi.dimension.low
 }
 
-func (mi *interval) LowAtDimension(dimension uint64) Value {
-	return mi.dimensions[dimension-1].low
+func (mi *interval) HighAtDimension() int64 {
+	return mi.dimension.high
 }
 
-func (mi *interval) HighAtDimension(dimension uint64) Value {
-	return mi.dimensions[dimension-1].high
-}
-
-func (mi *interval) OverlapsAtDimension(iv Interval, dimension uint64) bool {
-	return mi.HighAtDimension(dimension).Greater(iv.LowAtDimension(dimension)) &&
-		mi.LowAtDimension(dimension).Lesser(iv.HighAtDimension(dimension))
+func (mi *interval) OverlapsAtDimension(iv Interval) bool {
+	return mi.HighAtDimension() > iv.LowAtDimension() &&
+		mi.LowAtDimension() < iv.HighAtDimension()
 }
 
 func (mi interval) Data() interface{} {
@@ -78,14 +71,11 @@ func (mi interval) ID() uint64 {
 	return mi.id
 }
 
-func SingleDimensionInterval(low, high Value, id uint64, data interface{}) *interval {
-	return &interval{[]*dimension{&dimension{low: low, high: high}}, id, data}
+func SingleDimensionInterval(low, high int64, id uint64, data interface{}) *interval {
+	return &interval{&dimension{low: low, high: high}, id, data}
 }
 
-func MultiDimensionInterval(id uint64, data interface{}, dimensions ...*dimension) *interval {
-	return &interval{dimensions: dimensions, id:id, data:  data}
-}
 
-func ValueInterval(val Value) *interval {
+func ValueInterval(val int64) *interval {
 	return SingleDimensionInterval(val, val, 0, nil)
 }
