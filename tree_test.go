@@ -8,6 +8,23 @@ type testPointer struct {
 	Value string
 }
 
+
+func TestTreeAlter(t *testing.T) {
+	ss := []*segment{
+		{15, 20}, {10, 30}, {17, 19},
+		{5, 20}, {12, 15}, {30, 40},
+		{0, 10}, {1, 9}, {2,8}, {3,5}, {6,7},
+	}
+	root := build_tree(ss)
+	inorder(root)
+	x := &segment{3,7}
+	res := get_ans(root, x)
+	println(len(res))
+	for _, rr := range res {
+		println("[",rr.left, "=", rr.right,"]")
+	}
+}
+
 //
 func TestTree(t *testing.T) {
 	tree := New()
