@@ -67,10 +67,10 @@ func (mi interval) ID() uint64 {
 	return mi.id
 }
 
-func SingleDimensionInterval(low, high int64, id uint64, data interface{}) *interval {
+func SingleInterval(low, high int64, id uint64, data interface{}) *interval {
 	return &interval{low, high, id, data}
 }
 
 func ValueInterval(val int64) *interval {
-	return SingleDimensionInterval(val, val, 0, nil)
+	return SingleInterval(val, val, 0, nil)
 }

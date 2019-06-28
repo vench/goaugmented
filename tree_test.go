@@ -15,7 +15,7 @@ func TestTree(t *testing.T) {
 		t.Fatalf(`Error compare size tree`)
 	}
 
-	iv1 := SingleDimensionInterval(
+	iv1 := SingleInterval(
 		50,
 		100,
 		10,
@@ -23,7 +23,7 @@ func TestTree(t *testing.T) {
 	)
 	tree.Add(iv1)
 
-	iv2 := SingleDimensionInterval(
+	iv2 := SingleInterval(
 		50,
 		100,
 		12,
@@ -31,21 +31,21 @@ func TestTree(t *testing.T) {
 	)
 	tree.Add(iv2)
 
-	iv3 := SingleDimensionInterval(
+	iv3 := SingleInterval(
 		100,
 		200,
 		15, &testPointer{"Some text 3"},
 	)
 	tree.Add(iv3)
 
-	iv4 := SingleDimensionInterval(
+	iv4 := SingleInterval(
 		300,
 		400,
 		99, &testPointer{"Some text 4"},
 	)
 	tree.Add(iv4)
 
-	iv5 := SingleDimensionInterval(
+	iv5 := SingleInterval(
 		300,
 		400,
 		99, &testPointer{"Some text 5"},

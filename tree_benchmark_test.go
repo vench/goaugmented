@@ -24,7 +24,7 @@ func BenchmarkTree(b *testing.B) {
 		to := base + rand.Intn(base)
 		record := &record{from, to}
 
-		interval := SingleDimensionInterval(
+		interval := SingleInterval(
 			int64(from),
 			int64(from),
 			uint64(i+1),
