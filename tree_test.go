@@ -8,19 +8,21 @@ type testPointer struct {
 	Value string
 }
 
-
-func TestTreeAlter(t *testing.T) {
+func TestTreeInterval(t *testing.T) {
 	ss := []*Segment{
-		{78,98, nil},{6,8, nil},{5,9, nil},{11,20, nil},{3, 10, nil},
-		{20, 21, nil}, {1,12, nil}, {5,8, nil},  {5,14, nil},
+		{left: 78, right: 98},
+		{left: 6, right: 8},
+		{left: 5, right: 9},
+		{left: 11, right: 20},
+		{left: 3, right: 10},
+		{left: 20, right: 21},
+		{left: 1, right: 12},
+		{left: 5, right: 8},
+		{left: 5, right: 14},
 	}
 	root := BuildITree(ss)
-	inorder(root)
-	x := &Segment{12,13, nil}
+	x := &Segment{left: 12, right: 13}
 	res := get_ans(root, x)
-	//for _, rr := range res {
-	//	println("[",rr.left, "=", rr.right,"]")
-	//}
 	if len(res) != 2 {
 		t.Fatalf(`Error compare size query intervals`)
 	}
@@ -39,14 +41,59 @@ func TestTreeAlter(t *testing.T) {
 
 	x.left = -10
 	x.right = 13
+	res = get_ans(root, x)
 	if len(res) != 0 {
 		t.Fatalf(`Error compare size query intervals`)
 	}
+}
 
-	res = get_ans(root, x)
-	//for _, rr := range res {
-//		println("[",rr.left, "=", rr.right,"]")/
-//	}
+//
+func TestTreeInterval2(t *testing.T) {
+	ss := []*Segment{
+		{left: 50, right: 100, id: 10, data: &testPointer{"Some text"}},
+		{left: 50, right: 100, id: 12, data: &testPointer{"Some text 2"}},
+		{left: 100, right: 200, id: 15, data: &testPointer{"Some text 3"}},
+		{left: 300, right: 400, id: 99, data: &testPointer{"Some text 4"}},
+	}
+
+	tree := BuildITree(ss)
+	query := ValueInterval(301)
+	intervals := tree.Query(query)
+	if len(intervals) != 1 {
+		t.Fatalf(`Error compare size query intervals`)
+	}
+	d, ok := intervals[0].Data().(*testPointer)
+	if !ok {
+		t.Fatalf(`Error cast data to pointer`)
+	}
+
+	if d.Value != `Some text 4` {
+		t.Fatalf(`Error compare data value`)
+	}
+	intervals = tree.Query(ValueInterval(69))
+	if len(intervals) != 2 {
+		t.Fatalf(`Error compare size query intervals`)
+	}
+
+	if intervals[0].ID() != 10 {
+		t.Fatalf(`Error compare ids`)
+	}
+	if intervals[1].ID() != 12 {
+		t.Fatalf(`Error compare ids`)
+	}
+
+	if intervals[1].ID() == intervals[0].ID() {
+		t.Fatalf(`Error not compare ids`)
+	}
+
+	intervals = tree.Query(ValueInterval(112))
+	if len(intervals) != 1 {
+		t.Fatalf(`Error compare size query intervals`)
+	}
+	if intervals[0].ID() != 15 {
+		t.Fatalf(`Error compare ids`)
+	}
+
 }
 
 //

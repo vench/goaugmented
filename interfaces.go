@@ -53,6 +53,11 @@ type Interval interface {
 	Data() interface{}
 }
 
+//
+type Query interface {
+	Query(interval Interval) Intervals
+}
+
 // Tree defines the object that is returned from the
 // tree constructor.  We use a Tree interface here because
 // the returned tree could be a single dimension or many
