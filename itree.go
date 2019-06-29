@@ -14,6 +14,11 @@ func ( s *Segment) mean() int64 {
 }
 
 //
+func NewSegment(left, right int64, data interface{}) *Segment {
+	return  &Segment{left:left, right:right, data:data}
+}
+
+//
 type inode struct {
 	median int64
 	left, right *inode
