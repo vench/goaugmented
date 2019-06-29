@@ -10,19 +10,43 @@ type testPointer struct {
 
 
 func TestTreeAlter(t *testing.T) {
-	ss := []*segment{
-		{15, 20}, {10, 30}, {17, 19},
-		{5, 20}, {12, 15}, {30, 40},
-		{0, 10}, {1, 9}, {2,8}, {3,5}, {6,7},
+	ss := []*Segment{
+		{78,98, nil},{6,8, nil},{5,9, nil},{11,20, nil},{3, 10, nil},
+		{20, 21, nil}, {1,12, nil}, {5,8, nil},  {5,14, nil},
 	}
 	root := build_tree(ss)
 	inorder(root)
-	x := &segment{3,7}
+	x := &Segment{12,13, nil}
 	res := get_ans(root, x)
-	println(len(res))
-	for _, rr := range res {
-		println("[",rr.left, "=", rr.right,"]")
+	//for _, rr := range res {
+	//	println("[",rr.left, "=", rr.right,"]")
+	//}
+	if len(res) != 2 {
+		t.Fatalf(`Error compare size query intervals`)
 	}
+	if res[0].left != 11 || res[0].right != 20 {
+		t.Fatalf(`Error find wrong element`)
+	}
+	if res[1].left != 5 || res[1].right != 14 {
+		t.Fatalf(`Error find wrong element`)
+	}
+
+	x.right = 100
+	res = get_ans(root, x)
+	if len(res) != 0 {
+		t.Fatalf(`Error compare size query intervals`)
+	}
+
+	x.left = -10
+	x.right = 13
+	if len(res) != 0 {
+		t.Fatalf(`Error compare size query intervals`)
+	}
+
+	res = get_ans(root, x)
+	//for _, rr := range res {
+//		println("[",rr.left, "=", rr.right,"]")/
+//	}
 }
 
 //

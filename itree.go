@@ -3,12 +3,13 @@ package goaugmented
 import "sort"
 
 //
-type segment struct {
+type Segment struct {
 	left,right int64
+	data interface{}
 }
 
 //
-func ( s *segment) mean() int64 {
+func ( s *Segment) mean() int64 {
 	return (s.right + s.left) / 2
 }
 
@@ -16,19 +17,25 @@ func ( s *segment) mean() int64 {
 type inode struct {
 	median int64
 	left, right *inode
-	ileft, iright []*segment
+	ileft, iright []*Segment
 }
 
-func build_tree( segments []*segment) *inode {
+//
+func (t*inode) Query(left, right int64) []*Segment {
+	return get_ans(t, &Segment{left, right, nil})
+}
+
+//
+func build_tree( segments []*Segment) *inode {
 	if len(segments) == 0 {
 		return nil
 	}
 	median := median(segments)
 
-	left_child := []*segment{}
-	right_child := []*segment{}
-	left_segments := []*segment{}
-	right_segments := []*segment{}
+	left_child := []*Segment{}
+	right_child := []*Segment{}
+	left_segments := []*Segment{}
+	right_segments := []*Segment{}
 	for _,s := range segments {
 		if s.right < median {
 			left_child = append(left_child, s)
@@ -40,9 +47,14 @@ func build_tree( segments []*segment) *inode {
 		}
 	}
 
-	// TODO
-	//sort(left_segments) // by increasing of x_mid - segment.left
-	//sort(right_segments) // by decreasing of segment.right - x_mid
+	// by left
+	sort.Slice(left_segments, func(i, j int) bool {
+		return left_segments[i].left < left_segments[j].left
+	})
+	// by right desc
+	sort.Slice(right_segments, func(i, j int) bool {
+		return right_segments[i].right > right_segments[j].right
+	})
 	result := &inode{}
 	result.left = build_tree(left_child);
 	result.right = build_tree(right_child);
@@ -52,8 +64,8 @@ func build_tree( segments []*segment) *inode {
 	return result
 }
 
-//
-func median(s []*segment) int64 {
+// TODO optimize O(N)
+func median(s []*Segment) int64 {
 	sort.Slice(s, func(i, j int) bool {
 		return s[i].mean() >  s[j].mean()
 	})
@@ -61,16 +73,16 @@ func median(s []*segment) int64 {
 	if n & 0x01 == 1 {
 		return  s[n / 2].mean()
 	}
-	return (s[n / 2].mean() + s[n / 2 +1].mean()) / 2
+	return (s[n / 2-1].mean() + s[n / 2 ].mean()) / 2
 }
 
 //
-func get_ans( tree *inode,  q *segment) []*segment {
+func get_ans( tree *inode,  q *Segment) []*Segment {
 	if (tree == nil) {
-		return []*segment{}
+		return []*Segment{}
 	}
 
-	result :=  []*segment{}
+	result :=  []*Segment{}
 	if q.left < tree.median {
 		result = append(result, get_ans(tree.left, q)...)
 	}
@@ -79,16 +91,20 @@ func get_ans( tree *inode,  q *segment) []*segment {
 		result = append(result, get_ans(tree.right, q)...)
 	}
 
-	if q.left <= tree.median {
+	if q.right < tree.median {
 		for _,item := range tree.ileft {
 			if item.left < q.left {
 				result = append(result, item)
+			} else {
+				break
 			}
 		}
-	} else if q.right > tree.median {
+	} else if q.left >= tree.median {
 		for _,item := range tree.iright {
 			if item.right > q.right {
 				result = append(result, item)
+			} else {
+				break
 			}
 		}
 	}
