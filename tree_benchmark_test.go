@@ -29,7 +29,7 @@ func BenchmarkITree(b *testing.B) {
 		ss = append(ss, interval)
 	}
 
-	root := build_tree(ss)
+	root := BuildITree(ss)
 	//inorder(root)
 
 	b.ResetTimer()

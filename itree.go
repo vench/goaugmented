@@ -26,7 +26,7 @@ func (t*inode) Query(left, right int64) []*Segment {
 }
 
 //
-func build_tree( segments []*Segment) *inode {
+func BuildITree( segments []*Segment) *inode {
 	if len(segments) == 0 {
 		return nil
 	}
@@ -56,8 +56,8 @@ func build_tree( segments []*Segment) *inode {
 		return right_segments[i].right > right_segments[j].right
 	})
 	result := &inode{}
-	result.left = build_tree(left_child);
-	result.right = build_tree(right_child);
+	result.left = BuildITree(left_child);
+	result.right = BuildITree(right_child);
 	result.ileft = left_segments
 	result.iright = right_segments
 	result.median = median;

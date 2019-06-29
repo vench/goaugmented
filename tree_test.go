@@ -14,7 +14,7 @@ func TestTreeAlter(t *testing.T) {
 		{78,98, nil},{6,8, nil},{5,9, nil},{11,20, nil},{3, 10, nil},
 		{20, 21, nil}, {1,12, nil}, {5,8, nil},  {5,14, nil},
 	}
-	root := build_tree(ss)
+	root := BuildITree(ss)
 	inorder(root)
 	x := &Segment{12,13, nil}
 	res := get_ans(root, x)
