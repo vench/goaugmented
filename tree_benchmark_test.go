@@ -14,30 +14,40 @@ type record struct {
 
 func (*record) Foo() {}
 
-var countData = 500000
+var (
+	 countData = 1500000
+	 base = 1 << 16
+	 testData []Interval
+)
 
 //
-func BenchmarkIntervalTree(b *testing.B) {
-	ss := []*Segment{}
-	base := 1000000
+func init()  {
+	testData = make([]Interval, 0, countData)
 	for i := 0; i < countData; i++ {
-		from := base + rand.Intn(base)
+		from := base +  rand.Intn(base)
 		to := from + rand.Intn(base)
 		record := &record{from, to}
 
-		interval := &Segment{left: int64(from), right: int64(to), data: record}
-		ss = append(ss, interval)
+		interval := &segment{left: int64(from), right: int64(to), data: record}
+		testData = append(testData, interval)
 	}
+}
 
-	root := BuildITree(ss)
+
+
+//
+func BenchmarkTree(b *testing.B) {
+	tree := New()
+	tree.Add(testData...)
+
 	b.ResetTimer()
 
 	b.RunParallel(func(pb *testing.PB) {
 
 		for pb.Next() {
 			q := int64(base + rand.Intn(base))
-			query := &Segment{left: q, right: q}
-			list := root.Query(query)
+			query := &segment{left: q-1, right: q+1}
+			list := tree.Query(query)
 			for _, item := range list {
 				if r, ok := item.Data().(*record); ok {
 					r.Foo()
@@ -47,31 +57,17 @@ func BenchmarkIntervalTree(b *testing.B) {
 	})
 }
 
-func BenchmarkTree(b *testing.B) {
-	base := 1000000
-	tree := New()
-	for i := 0; i < countData; i++ {
-		from := base + rand.Intn(base)
-		to := from + rand.Intn(base)
-		record := &record{from, to}
-
-		interval := SingleInterval(
-			int64(from),
-			int64(from),
-			uint64(i+1),
-			record,
-		)
-		tree.Add(interval)
-	}
-
+//
+func BenchmarkIntervalTree(b *testing.B) {
+	tree := BuildITree(testData)
+	println( "get_max_height: ", get_max_height(tree) )
 	b.ResetTimer()
 
 	b.RunParallel(func(pb *testing.PB) {
 
 		for pb.Next() {
-			query := ValueInterval(
-				int64(base + rand.Intn(base)),
-			)
+			q := int64(base + rand.Intn(base))
+			query := &segment{left: q-1, right: q+1}
 			list := tree.Query(query)
 			for _, item := range list {
 				if r, ok := item.Data().(*record); ok {
@@ -83,21 +79,15 @@ func BenchmarkTree(b *testing.B) {
 }
 
 func BenchmarkTreeOrigin(b *testing.B) {
-	base := 1000000
 	m := map[uint64]*record{}
 	tree := gt.New(1)
-	for i := 0; i < countData; i++ {
-		from := base + rand.Intn(base)
-		to := from + rand.Intn(base)
-		id := uint64(i + 1)
-		record := &record{from, to}
-		m[id] = record
-
+	for _, item := range testData {
 		interval := gt.SingleDimensionInterval(
-			gta.NewInt64(int64(from)),
-			gta.NewInt64(int64(to)),
-			id,
+			gta.NewInt64(item.Low()),
+			gta.NewInt64(item.High()),
+			item.ID(),
 		)
+		m[item.ID()] = item.Data().(*record)
 		tree.Add(interval)
 	}
 
@@ -106,8 +96,11 @@ func BenchmarkTreeOrigin(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 
 		for pb.Next() {
-			query := gt.ValueInterval(
-				gta.NewInt64(int64(base + rand.Intn(base))),
+			q := int64(base + rand.Intn(base))
+			query := gt.SingleDimensionInterval(
+				gta.NewInt64(q-1),
+				gta.NewInt64(q+1),
+				0,
 			)
 			list := tree.Query(query)
 

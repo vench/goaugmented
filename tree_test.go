@@ -9,27 +9,27 @@ type testPointer struct {
 }
 
 func TestTreeInterval(t *testing.T) {
-	ss := []*Segment{
-		{left: 78, right: 98},
-		{left: 6, right: 8},
-		{left: 5, right: 9},
-		{left: 11, right: 20},
-		{left: 3, right: 10},
-		{left: 20, right: 21},
-		{left: 1, right: 12},
-		{left: 5, right: 8},
-		{left: 5, right: 14},
+	ss := []Interval{
+		&segment{left: 78, right: 98},
+		&segment{left: 6, right: 8},
+		&segment{left: 5, right: 9},
+		&segment{left: 11, right: 20},
+		&segment{left: 3, right: 10},
+		&segment{left: 20, right: 21},
+		&segment{left: 1, right: 12},
+		&segment{left: 5, right: 8},
+		&segment{left: 5, right: 14},
 	}
 	root := BuildITree(ss)
-	x := &Segment{left: 12, right: 13}
+	x := &segment{left: 12, right: 13}
 	res := get_ans(root, x)
 	if len(res) != 2 {
 		t.Fatalf(`Error compare size query intervals`)
 	}
-	if res[0].left != 11 || res[0].right != 20 {
+	if res[0].Low() != 11 || res[0].High() != 20 {
 		t.Fatalf(`Error find wrong element`)
 	}
-	if res[1].left != 5 || res[1].right != 14 {
+	if res[1].Low() != 5 || res[1].High() != 14 {
 		t.Fatalf(`Error find wrong element`)
 	}
 
@@ -49,11 +49,11 @@ func TestTreeInterval(t *testing.T) {
 
 //
 func TestTreeInterval2(t *testing.T) {
-	ss := []*Segment{
-		{left: 50, right: 100, id: 10, data: &testPointer{"Some text"}},
-		{left: 50, right: 100, id: 12, data: &testPointer{"Some text 2"}},
-		{left: 100, right: 200, id: 15, data: &testPointer{"Some text 3"}},
-		{left: 300, right: 400, id: 99, data: &testPointer{"Some text 4"}},
+	ss := []Interval{
+		&segment{left: 50, right: 100, id: 10, data: &testPointer{"Some text"}},
+		&segment{left: 50, right: 100, id: 12, data: &testPointer{"Some text 2"}},
+		&segment{left: 100, right: 200, id: 15, data: &testPointer{"Some text 3"}},
+		&segment{left: 300, right: 400, id: 99, data: &testPointer{"Some text 4"}},
 	}
 
 	tree := BuildITree(ss)
@@ -94,6 +94,48 @@ func TestTreeInterval2(t *testing.T) {
 		t.Fatalf(`Error compare ids`)
 	}
 
+}
+
+//
+func TestMedian(t *testing.T) {
+	m := median([]Interval{&segment{10,20, 0, nil}})
+	if m != 15 {
+		t.Fatalf(`Error math median`)
+	}
+
+	m = median([]Interval{})
+	if m != 0 {
+		t.Fatalf(`Error math median`)
+	}
+
+	m = median([]Interval{
+			&segment{4,8, 0, nil},	// 6
+			&segment{2,4, 0, nil}, // 3
+			&segment{2,8, 0, nil}, // 5
+			})
+	if m != 5 {
+		t.Fatalf(`Error math median`)
+	}
+
+	m = median([]Interval{
+		&segment{4,8, 0, nil},	// 6
+		&segment{2,4, 0, nil}, // 3
+		&segment{2,8, 0, nil}, // 5
+		&segment{1,8, 0, nil}, // 4
+	})
+	if m != 4 {
+		t.Fatalf(`Error math median`)
+	}
+
+	m = median([]Interval{
+		&segment{4,8, 0, nil},	// 6
+		&segment{2,4, 0, nil}, // 3
+		&segment{2,14, 0, nil}, // 7
+		&segment{1,8, 0, nil}, // 4
+	})
+	if m != 5 {
+		t.Fatalf(`Error math median`)
+	}
 }
 
 //
