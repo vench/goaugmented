@@ -2,7 +2,6 @@ package goaugmented
 
 import (
 	"sort"
-	"math/rand"
 )
 
 //
@@ -45,12 +44,12 @@ type inode struct {
 	median        int64
 	left, right   *inode
 	ileft, iright []Interval
-	height      uint64
+	equal      bool
 }
 
 //
 func (t *inode) Query(interval Interval) Intervals {
-	return get_ans(t, interval)
+	return getAns(t, interval, t.equal)
 }
 
 //
@@ -110,7 +109,7 @@ func getDeep(tree *inode) uint64{
 	return left
 }
 
-// TODO optimize O(N)
+//
 func median(s []Interval) int64 {
 	if len (s) == 0 {
 		return  0
@@ -125,50 +124,6 @@ func median(s []Interval) int64 {
 	return (intervalMean(s[n/2-1]) + intervalMean(s[n/2])) / 2
 }
 
-func medianQ(s []Interval) int64 {
-	n := len(s)
-	if n == 0{
-		return 0
-	}
-	if n & 0x01 == 1 {
-		return quickselect(s, n/2)
-	}
-	return (quickselect(s, n / 2 - 1) + quickselect(s, n / 2)) / 2
-}
-
-func quickselect(s []Interval, k int) int64 {
-	if len(s) == 1{
-		return intervalMean(s[0])
-	}
-
-	in := 0
-	if k > 0 {
-		in = rand.Intn(k)
-	}
-
-	pivot := intervalMean(s[in])
-	lows,highs,pivots := []Interval{},[]Interval{},[]Interval{}
-	for _, el := range  s {
-		m := intervalMean(el)
-		if m < pivot {
-			lows = append(lows, el)
-		}
-		if m > pivot {
-			highs = append(highs, el)
-		}
-		if m == pivot {
-			pivots = append(pivots, el)
-		}
-	}
-
-	if k < len(lows) {
-		return quickselect(lows, k)
-	} else if k < len(lows) + len(pivots) {
-		return intervalMean(pivots[0])
-	}
-
-	return quickselect(highs, k - len(lows) - len(pivots))
-}
 
 //
 func intervalMean(i Interval) int64 {
@@ -176,25 +131,20 @@ func intervalMean(i Interval) int64 {
 }
 
 //
-func get_ans(tree *inode, q Interval) (result Intervals) {
+func getAns(tree *inode, q Interval, equal bool) (result Intervals) {
 	if tree == nil {
 		return result
 	}
 	m := intervalMean(q)
-
-	if q.Low() == 78 {
-		println("median: ", tree.median)
-	}
-
 	if m < tree.median {
-		result = append(result, get_ans(tree.left, q)...)
+		result = append(result, getAns(tree.left, q, equal)...)
 	} else if m > tree.median {
-		result = append(result, get_ans(tree.right, q)...)
+		result = append(result, getAns(tree.right, q, equal)...)
 	}
 
 	if m < tree.median {
 		for _, item := range tree.ileft {
-			if item.Low() < q.Low() {
+			if aLessB(item.Low(), q.Low(), equal) {
 				result = append(result, item)
 			} else {
 				break
@@ -202,7 +152,7 @@ func get_ans(tree *inode, q Interval) (result Intervals) {
 		}
 	} else if m >= tree.median {
 		for _, item := range tree.iright {
-			if item.High() > q.High() {
+			if aGreaterB(item.High(), q.High(), equal) {
 				result = append(result, item)
 			} else {
 				break
@@ -211,6 +161,22 @@ func get_ans(tree *inode, q Interval) (result Intervals) {
 	}
 
 	return result
+}
+
+//
+func aLessB(a,b int64, equal bool) bool {
+	if equal {
+		return a <= b
+	}
+	return a < b
+}
+
+//
+func aGreaterB(a,b int64, equal bool) bool {
+	if equal {
+		return a >= b
+	}
+	return a > b
 }
 
 //
