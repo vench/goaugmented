@@ -45,6 +45,13 @@ func TestTreeInterval(t *testing.T) {
 	if len(res) != 0 {
 		t.Fatalf(`Error compare size query intervals`)
 	}
+
+	x.left = 79
+	x.right = 97
+	res = get_ans(root, x)
+	if len(res) != 1 {
+		t.Fatalf(`Error compare size query intervals (%d)`, len(res))
+	}
 }
 
 //
@@ -128,6 +135,59 @@ func TestMedian(t *testing.T) {
 	}
 
 	m = median([]Interval{
+		&segment{4,8, 0, nil},	// 6
+		&segment{2,4, 0, nil}, // 3
+		&segment{2,14, 0, nil}, // 7
+		&segment{1,8, 0, nil}, // 4
+	})
+	if m != 5 {
+		t.Fatalf(`Error math median`)
+	}
+}
+
+//
+func TestMedianQ(t *testing.T) {
+	m := medianQ([]Interval{&segment{10,20, 0, nil}})
+	if m != 15 {
+		t.Fatalf(`Error math median`)
+	}
+
+	m = medianQ([]Interval{})
+	if m != 0 {
+		t.Fatalf(`Error math median`)
+	}
+
+	m = medianQ([]Interval{
+		&segment{4,8, 0, nil},	// 6
+		&segment{2,4, 0, nil}, // 3
+		&segment{2,8, 0, nil}, // 5
+	})
+	if m != 5 {
+		t.Fatalf(`Error math median`)
+	}
+
+	m = medianQ([]Interval{
+		&segment{4,8, 0, nil},	// 6
+		&segment{2,4, 0, nil}, // 3
+		&segment{2,8, 0, nil}, // 5
+		&segment{1,8, 0, nil}, // 4
+	})
+	if m != 4 {
+		t.Fatalf(`Error math median`)
+	}
+
+	m = medianQ([]Interval{
+		&segment{4,8, 0, nil},	// 6
+		&segment{2,4, 0, nil}, // 3
+		&segment{2,14, 0, nil}, // 7
+		&segment{1,8, 0, nil}, // 4
+	})
+	if m != 5 {
+		t.Fatalf(`Error math median`)
+	}
+
+
+	m = medianQ([]Interval{
 		&segment{4,8, 0, nil},	// 6
 		&segment{2,4, 0, nil}, // 3
 		&segment{2,14, 0, nil}, // 7

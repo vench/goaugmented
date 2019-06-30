@@ -59,9 +59,10 @@ func BenchmarkTree(b *testing.B) {
 
 //
 func BenchmarkIntervalTree(b *testing.B) {
+
 	tree := BuildITree(testData)
-	println( "get_max_height: ", get_max_height(tree) )
 	b.ResetTimer()
+
 
 	b.RunParallel(func(pb *testing.PB) {
 

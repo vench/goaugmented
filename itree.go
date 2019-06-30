@@ -1,6 +1,9 @@
 package goaugmented
 
-import "sort"
+import (
+	"sort"
+	"math/rand"
+)
 
 //
 type segment struct {
@@ -57,46 +60,48 @@ func BuildITree(intervals []Interval) *inode {
 	}
 	median := median(intervals)
 
-	left_child := []Interval{}
-	right_child := []Interval{}
-	left_segments := []Interval{}
-	right_segments := []Interval{}
+	leftChild := make([]Interval, 0)
+	rightChild := make([]Interval, 0)
+	leftSegments := make([]Interval, 0)
+	rightSegments := make([]Interval, 0)
 	for _, s := range intervals {
 		if s.High() < median {
-			left_child = append(left_child, s)
+			leftChild = append(leftChild, s)
 		} else if s.Low() > median {
-			right_child = append(right_child, s)
+			rightChild = append(rightChild, s)
 		} else {
-			left_segments = append(left_segments, s)
-			right_segments = append(right_segments, s)
+			leftSegments = append(leftSegments, s)
+			rightSegments = append(rightSegments, s)
 		}
 	}
 
 	// by left
-	sort.Slice(left_segments, func(i, j int) bool {
-		return left_segments[i].Low() < left_segments[j].Low()
+	sort.Slice(leftSegments, func(i, j int) bool {
+		return leftSegments[i].Low() < leftSegments[j].Low()
 	})
 	// by right desc
-	sort.Slice(right_segments, func(i, j int) bool {
-		return right_segments[i].High() > right_segments[j].High()
+	sort.Slice(rightSegments, func(i, j int) bool {
+		return rightSegments[i].High() > rightSegments[j].High()
 	})
 	result := &inode{}
-	result.left = BuildITree(left_child)
-	result.right = BuildITree(right_child)
-	result.ileft = left_segments
-	result.iright = right_segments
+	result.left = BuildITree(leftChild)
+	result.right = BuildITree(rightChild)
+	result.ileft = leftSegments
+	result.iright = rightSegments
 	result.median = median
 	return result
 }
 
-func get_max_height(tree *inode) int{
-	right := 1
-	left := 1
+//
+func getDeep(tree *inode) uint64{
+	var (
+		right, left uint64 = 1, 1
+	)
 	if tree.right != nil {
-		right += get_max_height(tree.right)
+		right += getDeep(tree.right)
 	}
 	if tree.left != nil {
-		left += get_max_height(tree.left)
+		left += getDeep(tree.left)
 	}
 
 	if right > left {
@@ -120,6 +125,52 @@ func median(s []Interval) int64 {
 	return (intervalMean(s[n/2-1]) + intervalMean(s[n/2])) / 2
 }
 
+func medianQ(s []Interval) int64 {
+	n := len(s)
+	if n == 0{
+		return 0
+	}
+	if n & 0x01 == 1 {
+		return quickselect(s, n/2)
+	}
+	return (quickselect(s, n / 2 - 1) + quickselect(s, n / 2)) / 2
+}
+
+func quickselect(s []Interval, k int) int64 {
+	if len(s) == 1{
+		return intervalMean(s[0])
+	}
+
+	in := 0
+	if k > 0 {
+		in = rand.Intn(k)
+	}
+
+	pivot := intervalMean(s[in])
+	lows,highs,pivots := []Interval{},[]Interval{},[]Interval{}
+	for _, el := range  s {
+		m := intervalMean(el)
+		if m < pivot {
+			lows = append(lows, el)
+		}
+		if m > pivot {
+			highs = append(highs, el)
+		}
+		if m == pivot {
+			pivots = append(pivots, el)
+		}
+	}
+
+	if k < len(lows) {
+		return quickselect(lows, k)
+	} else if k < len(lows) + len(pivots) {
+		return intervalMean(pivots[0])
+	}
+
+	return quickselect(highs, k - len(lows) - len(pivots))
+}
+
+//
 func intervalMean(i Interval) int64 {
 	return (i.High() + i.Low()) / 2
 }
@@ -129,14 +180,19 @@ func get_ans(tree *inode, q Interval) (result Intervals) {
 	if tree == nil {
 		return result
 	}
+	m := intervalMean(q)
 
-	if q.Low() < tree.median {
+	if q.Low() == 78 {
+		println("median: ", tree.median)
+	}
+
+	if m < tree.median {
 		result = append(result, get_ans(tree.left, q)...)
-	} else if q.High() > tree.median {
+	} else if m > tree.median {
 		result = append(result, get_ans(tree.right, q)...)
 	}
 
-	if q.High() < tree.median {
+	if m < tree.median {
 		for _, item := range tree.ileft {
 			if item.Low() < q.Low() {
 				result = append(result, item)
@@ -144,7 +200,7 @@ func get_ans(tree *inode, q Interval) (result Intervals) {
 				break
 			}
 		}
-	} else if q.Low() >= tree.median {
+	} else if m >= tree.median {
 		for _, item := range tree.iright {
 			if item.High() > q.High() {
 				result = append(result, item)
